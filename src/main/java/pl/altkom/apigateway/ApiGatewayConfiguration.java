@@ -12,6 +12,7 @@ public class ApiGatewayConfiguration {
     public RouteLocator gatewayRouter(RouteLocatorBuilder routeLocatorBuilder) {
         return routeLocatorBuilder.routes()
                 .route(p -> p.path("/get").uri("http://httpbin.org:80"))
+                .route(p -> p.path("/currency-exchange/**").uri("lb://currency-exchange/"))
                 .build();
     }
 }
