@@ -1,0 +1,74 @@
+version: '3.7'
+
+services:
+  currency-exchange:
+    image: nauka/mitroservices-currency-exchange-service:0.0.1-SNAPSHOT
+    mem_limit: 700m
+    ports:
+      - "8003:8003"
+    networks:
+      - currencynetwork
+    depends_on:
+      - naming-server
+      - db
+    environment:
+      - EUREKA.CLIENT.SERVICEURL.DEFAULTZONE=http://naming-server:8761/eureka
+      - SPRING.DATASOURCE.URL=jdbc:postgresql://db:5432/compose-postgres
+      - SPRING.DATASOURCE.username=compose-postgres
+      - SPRING.DATASOURCE.password=compose-postgres
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create-drop
+
+  currency-conversion:
+    image: nauka/mitroservices-currency-conversion-service:0.0.1-SNAPSHOT
+    mem_limit: 700m
+    ports:
+      - "8010:8010"
+    networks:
+      - currencynetwork
+    depends_on:
+      - naming-server
+      - db
+    environment:
+      - EUREKA.CLIENT.SERVICEURL.DEFAULTZONE=http://naming-server:8761/eureka
+
+  api-gateway:
+    image: nauka/mitroservices-api-gateway:0.0.1-SNAPSHOT
+    mem_limit: 700m
+    ports:
+      - "8900:8900"
+    networks:
+      - currencynetwork
+    depends_on:
+      - naming-server
+    environment:
+      - EUREKA.CLIENT.SERVICEURL.DEFAULTZONE=http://naming-server:8761/eureka
+
+  db:
+    image: postgres:13.1-alpine
+    container_name: db
+    networks:
+      - currencynetwork
+    environment:
+      - POSTGRES_USER=compose-postgres
+      - POSTGRES_PASSWORD=compose-postgres
+
+  naming-server:
+    image: nauka/mitroservices-naming-server:0.0.1-SNAPSHOT
+    mem_limit: 700m
+    ports:
+      - "8761:8761"
+    networks:
+      - currencynetwork
+
+  zipkin-server:
+    image: openzipkin/zipkin:2.23
+    mem_limit: 700m
+    ports:
+      - "9411:9411"
+    networks:
+      - currencynetwork
+    depends_on:
+      - naming-server
+
+networks:
+  currencynetwork:
